@@ -1,4 +1,6 @@
 *~
 *.swp
 *.swo
-
+*.exe
+*.so
+*.dmg

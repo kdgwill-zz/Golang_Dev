@@ -22,13 +22,16 @@ func main() {
 	var scanner pascomp.Scanner //Since their is nill arguments can do C++ style init
 	//would use scanner:= new(Scanner) to allocate memory for fields set all members to respective zero and return a pointer
 	defer scanner.DeinitScanner() //Kind of a hack to mimic destructors
-	scanner.InitScanner()         //no constructor so do this way
+	scanner.NewScanner()          //no constructor so do this way
 	var x = 0
 	for {
+		//tok, _ := scanner.GetToken(&x)
 		tok, tokString := scanner.GetToken(&x)
-		if tok == pascomp.Tok_Eof {
+		if tok == pascomp.Tokeof {
 			break
 		}
+		//scanner.St.Printlexeme(x)
+		//scanner.St.Printtoken(x)
 		fmt.Printf("%-9s %s\n", tokString, tok)
 	}
 }
