@@ -111,14 +111,14 @@ func (this *SymbolTable) Installname(name string, tabindex *int) bool {
 	nameindex = this.namTabLen
 	this.namTabLen++
 	this.nametable[nameindex].strstart = this.strTabLen
+	this.nametable[nameindex].strlength = length
 
-	for i := 0; i < length; i++ {
+	for i := 0; i < length; i, this.strTabLen = i+1, this.strTabLen+1 {
 		this.stringtable[this.strTabLen] = rune(name[i])
-		this.strTabLen++
 	}
 
-	this.stringtable[this.strTabLen] = 0
-	this.strTabLen++
+	//this.stringtable[this.strTabLen] = 0
+	//this.strTabLen++
 	this.nametable[nameindex].nextname = this.hashTable[code]
 	this.hashTable[code] = nameindex
 	*tabindex = this.Installattrib(nameindex)
@@ -134,27 +134,20 @@ func (this *SymbolTable) Installname(name string, tabindex *int) bool {
 func (this *SymbolTable) ispresent(name string, code *int, nameIndex *int) (found bool) {
 
 	found = false
-	var oldnameindex, k int
 
 	/* initialize the old name's index to -1;
 	   it may not be there */
-	oldnameindex = -1
+	oldnameindex := -1
 
 	// find the hash value
 	*code = this.hashcode(name)
 
-	j, length := 0, len(name)
 	// starting with the entry in the hash table, trace through
 	// the name table's link list for that hash value.
 	for *nameIndex = this.hashTable[*code]; !found && *nameIndex != -1; oldnameindex, *nameIndex = *nameIndex, this.nametable[*nameIndex].nextname {
-		//k = this.nametable[*nameIndex].strstart
-		//found = name != (this.stringtable + string(k))
-		for j, k = 0, this.nametable[*nameIndex].strstart; j < length &&
-			rune(name[j]) == this.stringtable[k]; j, k = j+1, k+1 {
-		}
-		if j == length {
-			found = true
-		}
+		s := this.nametable[*nameIndex].strstart
+		e := s + this.nametable[*nameIndex].strlength
+		found = strings.EqualFold(name, string(this.stringtable[s:e]))
 	}
 
 	// if it's there, we actually went right past it.
@@ -183,19 +176,13 @@ func (this *SymbolTable) IsPresent(name string, tabIndex *int) (found bool) {
 	// Find the hash value
 	code := this.hashcode(name)
 
-	j, k, length := 0, 0, len(name)
 	// Starting with the entry in the hash table, trace through
 	// the name table's link list for that hash value.
 	for nameindex = this.hashTable[code]; !found && nameindex != -1; oldnameindex, nameindex =
 		nameindex, this.nametable[nameindex].nextname {
-		//k := this.nametable[nameindex].strstart
-		//found = name != (this.stringtable + string(k))
-		for j, k = 0, this.nametable[nameindex].strstart; j < length &&
-			rune(name[j]) == this.stringtable[k]; j, k = j+1, k+1 {
-		}
-		if j == length {
-			found = true
-		}
+		s := this.nametable[nameindex].strstart
+		e := s + this.nametable[nameindex].strlength
+		found = strings.EqualFold(name, string(this.stringtable[s:e]))
 	}
 
 	// If it's there, we actually went right past it.
@@ -372,7 +359,9 @@ func (this *SymbolTable) makelabel(tabindex int, label *[]rune) {
 	case Stliteral:
 		if this.Getdatatype(tabindex) == Dtinteger {
 			ivalue = this.attribTable[tabindex].thisname
-			*label = append(this.stringtable[:], []rune{rune(this.nametable[ivalue].strstart), rune(0)}...)
+			temp := this.nametable[ivalue].strstart
+			k := temp + this.nametable[ivalue].strlength
+			*label = this.stringtable[temp:k]
 			break
 		}
 		fallthrough
@@ -397,7 +386,9 @@ func (this *SymbolTable) makelabel(tabindex int, label *[]rune) {
 		fallthrough
 	case Stprocedure:
 		ivalue = this.attribTable[tabindex].thisname
-		*label = append(this.stringtable[:], []rune{rune(this.nametable[ivalue].strstart), rune(0)}...)
+		temp := this.nametable[ivalue].strstart
+		k := temp + this.nametable[ivalue].strlength
+		*label = this.stringtable[temp:k]
 
 		if len(*label) >= 5 {
 			indexstr = strconv.FormatInt(int64(tabindex), 10)
@@ -472,14 +463,15 @@ func (this *SymbolTable) paramlabel(tabindex int, label *[]rune, bytecount *int)
 func (this *SymbolTable) Printlexeme(tabindex int) {
 	i := this.attribTable[tabindex].thisname
 	j := this.nametable[i].strstart
-	s := append(this.stringtable[:], rune(j))
+	k := j + this.nametable[i].strlength
+	s := this.stringtable[j:k]
 	fmt.Print(string(s))
 }
 
 // PrintToken() -	Print the token class's name given the token
 //                  class.
 func (this *SymbolTable) Printtoken(i int) {
-	fmt.Println(tokenTypes[this.gettok_class(i)])
+	fmt.Print(tokenTypes[this.gettok_class(i)])
 }
 
 // GetTok_Class()	- Returns the token class for the symbol
@@ -504,13 +496,13 @@ func (this *SymbolTable) LexemeInCaps(tabindex int) {
 	//	Get the index within the string table
 	//	where the lexeme starts
 	i := this.attribTable[tabindex].thisname
+	j := this.nametable[i].strstart
+	k := j + this.nametable[i].strlength
 	//	Until you encounter the ending null rune,
 	//	Print the character in upper case.
-	for j := this.nametable[i].strstart; this.stringtable[j] != 0; j++ {
-		fmt.Print(strings.ToUpper(string(this.stringtable[j])))
-	}
+	fmt.Print(strings.ToUpper(string(this.stringtable[j:k])))
 
-	fmt.Println()
+	//fmt.Println()
 }
 
 func (this *SymbolTable) Getrvalue(tabindex int) float32 {

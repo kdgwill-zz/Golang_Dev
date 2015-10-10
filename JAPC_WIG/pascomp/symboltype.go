@@ -47,6 +47,7 @@ type attribTabType struct {
 //	the next lexeme with the same hash value.
 type nameTabType struct {
 	strstart  int
+	strlength int
 	symtabptr int
 	nextname  int
 }

@@ -4,3 +4,5 @@
 *.exe
 *.so
 *.dmg
+*.app
+*.zip

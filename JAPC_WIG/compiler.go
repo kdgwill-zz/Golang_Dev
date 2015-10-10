@@ -26,12 +26,17 @@ func main() {
 	var x = 0
 	for {
 		//tok, _ := scanner.GetToken(&x)
-		tok, tokString := scanner.GetToken(&x)
+		tok, _ := scanner.GetToken(&x)
 		if tok == pascomp.Tokeof {
 			break
 		}
-		//scanner.St.Printlexeme(x)
-		//scanner.St.Printtoken(x)
-		fmt.Printf("%-9s %s\n", tokString, tok)
+		scanner.St.Printlexeme(x)
+		fmt.Print("\t")
+		scanner.St.Printtoken(x)
+		fmt.Print("\n")
+		//fmt.Printf("%-9s %s\n", tokString, tok)
 	}
+	//fmt.Println()
+	//pascomp.DumpSymbolTable(scanner.St)
+	//	pascomp.DumpSymbolTable2(scanner.St)
 }

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+GOOS=darwin  GOARCH=386   go build -o ./bin/compiler_i386.app  compiler.go
+GOOS=darwin  GOARCH=amd64 go build -o ./bin/compiler_amd64.app compiler.go
+GOOS=windows GOARCH=386   go build -o ./bin/compiler_i386.exe  compiler.go
+GOOS=windows GOARCH=amd64 go build -o ./bin/compiler_amd64.exe compiler.go
+GOOS=linux   GOARCH=386   go build -o ./bin/compiler_i386.so   compiler.go
+GOOS=linux   GOARCH=amd64 go build -o ./bin/compiler_amd64.so  compiler.go
